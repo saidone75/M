@@ -22,11 +22,11 @@ public class MoveMaker {
             board[124] = 0;
         }
 
-        // if rook moves then reset that side castling flags
-        if (move[0] == 0) board[122] = 0;
-        if (move[0] == 7) board[121] = 0;
-        if (move[0] == 112) board[124] = 0;
-        if (move[0] == 119) board[123] = 0;
+        // Moving or capturing a rook on its starting square revokes castling rights.
+        if (move[0] == 0 || move[1] == 0) board[122] = 0;
+        if (move[0] == 7 || move[1] == 7) board[121] = 0;
+        if (move[0] == 112 || move[1] == 112) board[124] = 0;
+        if (move[0] == 119 || move[1] == 119) board[123] = 0;
 
         // castling
         if ((move[2] & MoveUtils.SHORT_CASTLE) == MoveUtils.SHORT_CASTLE) {
@@ -77,9 +77,9 @@ public class MoveMaker {
         }
         if ((move[2] & MoveUtils.PROMOTE_KNIGHT) == MoveUtils.PROMOTE_KNIGHT) {
             if (board[120] == 0) {
-                board[move[1]] = Pieces.BK;
+                board[move[1]] = Pieces.BN;
             } else {
-                board[move[1]] = Pieces.WK;
+                board[move[1]] = Pieces.WN;
             }
         }
         if ((move[2] & MoveUtils.PROMOTE_ROOK) == MoveUtils.PROMOTE_ROOK) {

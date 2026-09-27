@@ -1,26 +1,24 @@
 package org.saidone.m;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.saidone.m.moves.generators.MoveGenerator;
 import org.saidone.m.moves.MoveMaker;
 import org.saidone.m.moves.MoveUtils;
 import org.saidone.m.moves.UserMoveParser;
 import org.saidone.utils.KProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.Scanner;
 
+@Slf4j
 public class M {
-
-    private static Logger logger = LoggerFactory.getLogger(M.class);
 
     public static void main(String[] args) {
 
         DOMConfigurator.configure("etc/log4j.xml");
-        logger.info("Application started on --> {}", new Date());
+        log.info("Application started on --> {}", new Date());
 
         // properties
         String timeForMove = KProperties.INSTANCE.getProperty("timeForMove");
@@ -40,18 +38,16 @@ public class M {
             String line = reader.nextLine();
             move = UserMoveParser.parseInput(line);
             if (move != null && MoveUtils.getMove(move, allowedMoves) != null) {
-                // TODO make move
-                // TODO if a pawn is promoting, ask first
                 if (BoardUtils.isPromoting(move, board)) {
                     byte promotionFlag;
                     do {
                         System.out.println("Promote to (Q R B or N): ");
-                        Scanner promotionScanner = new Scanner(System.in);
-                        String p = promotionScanner.nextLine();
+                        String p = reader.nextLine();
                         promotionFlag = UserMoveParser.parsePromotionInput(p);
                     } while (promotionFlag == 0);
                     byte[] promotionMove = MoveUtils.getMove(move, allowedMoves);
-                    promotionMove = new byte[]{promotionMove[0], promotionMove[1], promotionFlag};
+                    promotionMove = new byte[]{promotionMove[0], promotionMove[1],
+                            (byte) ((promotionMove[2] & MoveUtils.CAPTURE) | promotionFlag)};
                     board = MoveMaker.makeMove(board, promotionMove);
                 } else {
                     board = MoveMaker.makeMove(board, MoveUtils.getMove(move, allowedMoves));

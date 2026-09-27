@@ -2,6 +2,7 @@ package org.saidone.m;
 
 import org.saidone.m.moves.generators.BishopMoveGenerator;
 import org.saidone.m.moves.generators.KnightMoveGenerator;
+import org.saidone.m.moves.generators.KingMoveGenerator;
 import org.saidone.m.moves.MoveMaker;
 import org.saidone.m.moves.generators.RookMoveGenerator;
 
@@ -156,6 +157,12 @@ public class BoardUtils {
     }
 
     public static boolean isAttackedByBlack(int i, byte[] board) {
+        for (int direction : KingMoveGenerator.DIRECTIONS) {
+            int square = i + direction;
+            if ((square & 0x88) == 0 && board[square] == Pieces.BK)
+                return true;
+        }
+
         // check if square is attacked by a knight
         for (int j : KnightMoveGenerator.KNIGHT_MOVES) {
             int k = i + j;
@@ -191,6 +198,12 @@ public class BoardUtils {
     }
 
     public static boolean isAttackedByWhite(int i, byte[] board) {
+        for (int direction : KingMoveGenerator.DIRECTIONS) {
+            int square = i + direction;
+            if ((square & 0x88) == 0 && board[square] == Pieces.WK)
+                return true;
+        }
+
         // check if square is attacked by a knight
         for (int j : KnightMoveGenerator.KNIGHT_MOVES) {
             int k = i + j;
@@ -226,7 +239,7 @@ public class BoardUtils {
     }
 
     public static boolean isPromoting(byte[] move, byte[] board) {
-        if ((board[move[0]] == Pieces.BP && (move[1] >> 4) == 1) ||
+        if ((board[move[0]] == Pieces.BP && (move[1] >> 4) == 0) ||
                 (board[move[0]] == Pieces.WP && (move[1] >> 4) == 7)) return true;
         else return false;
     }

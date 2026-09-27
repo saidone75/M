@@ -20,8 +20,7 @@ public class Searcher {
         }
 
 
-
-
+        throw new UnsupportedOperationException("Move search is not implemented yet");
     }
 
 

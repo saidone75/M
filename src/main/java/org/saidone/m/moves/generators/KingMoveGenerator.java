@@ -1,6 +1,7 @@
 package org.saidone.m.moves.generators;
 
 import org.saidone.m.BoardUtils;
+import org.saidone.m.Pieces;
 import org.saidone.m.moves.MoveUtils;
 
 import java.util.LinkedList;
@@ -37,7 +38,7 @@ public class KingMoveGenerator {
         // castling
         if (board[120] != 0) {
             // king side
-            if (board[121] != 0 && board[5] == 0 && board[6] == 0) {
+            if (i == 4 && board[7] == Pieces.WR && board[121] != 0 && board[5] == 0 && board[6] == 0) {
                 if (!BoardUtils.isAttackedByBlack(4, board) &&
                         !BoardUtils.isAttackedByBlack(5, board) &&
                         !BoardUtils.isAttackedByBlack(6, board)) {
@@ -45,7 +46,7 @@ public class KingMoveGenerator {
                 }
             }
             // queen side
-            if (board[122] != 0 && board[1] == 0 && board[2] == 0 && board[3] == 0) {
+            if (i == 4 && board[0] == Pieces.WR && board[122] != 0 && board[1] == 0 && board[2] == 0 && board[3] == 0) {
                 if (!BoardUtils.isAttackedByBlack(2, board) &&
                         !BoardUtils.isAttackedByBlack(3, board) &&
                         !BoardUtils.isAttackedByBlack(4, board)) {
@@ -55,7 +56,7 @@ public class KingMoveGenerator {
         }
         if (board[120] == 0) {
             // king side
-            if (board[123] != 0 && board[117] == 0 && board[118] == 0) {
+            if (i == 116 && board[119] == Pieces.BR && board[123] != 0 && board[117] == 0 && board[118] == 0) {
                 if (!BoardUtils.isAttackedByWhite(116, board) &&
                         !BoardUtils.isAttackedByWhite(117, board) &&
                         !BoardUtils.isAttackedByWhite(118, board)) {
@@ -63,7 +64,7 @@ public class KingMoveGenerator {
                 }
             }
             // queen side
-            if (board[124] != 0 && board[113] == 0 && board[114] == 0 && board[115] == 0) {
+            if (i == 116 && board[112] == Pieces.BR && board[124] != 0 && board[113] == 0 && board[114] == 0 && board[115] == 0) {
                 if (!BoardUtils.isAttackedByWhite(114, board) &&
                         !BoardUtils.isAttackedByWhite(115, board) &&
                         !BoardUtils.isAttackedByWhite(116, board)) {
