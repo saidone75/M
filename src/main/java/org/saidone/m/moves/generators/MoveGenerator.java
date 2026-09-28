@@ -11,7 +11,8 @@ public class MoveGenerator {
     public static LinkedList<byte[]> genUserMoves(byte[] board) {
         LinkedList<byte[]> userMoves = new LinkedList<>();
         for (byte[] move : MoveGenerator.genMoves(board)) {
-            if (!BoardUtils.isKingInCheck(move, board)) {
+            if (board[move[1]] != Pieces.WK && board[move[1]] != Pieces.BK
+                    && !BoardUtils.isKingInCheck(move, board)) {
                 userMoves.add(move);
             }
         }

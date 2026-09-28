@@ -244,18 +244,21 @@ public class BoardUtils {
         else return false;
     }
 
+    public static boolean isKingInCheck(byte[] board) {
+        return isKingInCheck(board, board[120] != 0);
+    }
+
+    private static boolean isKingInCheck(byte[] board, boolean white) {
+        int king = white ? Pieces.WK : Pieces.BK;
+        for (int i = 0; i < 120; i++) {
+            if ((i & 0x88) == 0 && board[i] == king)
+                return white ? isAttackedByBlack(i, board) : isAttackedByWhite(i, board);
+        }
+        throw new IllegalArgumentException("Missing king");
+    }
+
     public static boolean isKingInCheck(byte[] move, byte[] board) {
-        board = MoveMaker.makeMove(board.clone(), move);
-        int king = (board[120] == 0) ? Pieces.WK : Pieces.BK;
-        int i;
-        for (i = 0; i < 120; i++) {
-            if (board[i] == king) break;
-        }
-        if (king == Pieces.WK) {
-            return isAttackedByBlack(i, board);
-        } else {
-            return isAttackedByWhite(i, board);
-        }
+        return isKingInCheck(MoveMaker.makeMove(board.clone(), move), board[120] != 0);
     }
 
 }

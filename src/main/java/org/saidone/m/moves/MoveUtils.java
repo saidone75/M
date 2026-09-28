@@ -27,7 +27,7 @@ public class MoveUtils {
     }
 
     public static LinkedList<byte[]> capturesFirst(LinkedList<byte[]> moves) {
-        LinkedList capturesFirst = new LinkedList<byte[]>();
+        LinkedList<byte[]> capturesFirst = new LinkedList<>();
         for (byte[] move : moves) {
             if (isCapture(move)) {
                 capturesFirst.addFirst(move);

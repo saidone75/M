@@ -57,8 +57,7 @@ public class MoveMaker {
                     board[move[1] - 16] = 0;
                 }
                 board[125] = 0;
-            }
-            if (board[120] == 0) {
+            } else if (board[120] == 0) {
                 board[125] = (byte) (move[1] + 16);
             } else {
                 board[125] = (byte) (move[1] - 16);
