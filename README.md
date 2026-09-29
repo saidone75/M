@@ -1,43 +1,43 @@
-# M
+# Mostly Harmless (formerly "M - The monster of Màsera")
 
-Motore scacchistico Java. Richiede JDK 11 o successivo e Maven 3.6.3 o successivo.
+A Java chess engine. Requires JDK 11 or later and Maven 3.6.3 or later.
 
-## Compilazione
+## Build
 
 ```sh
 mvn clean verify
 ```
 
-Il JAR viene generato in `target/m-1.0-SNAPSHOT.jar`.
+The JAR is generated at `target/m-1.0-SNAPSHOT.jar`.
 
-## Avvio
+## Run
 
-Dalla directory principale del progetto:
+From the project's root directory:
 
 ```sh
 mvn exec:java
 ```
 
-Prima del primo avvio eseguire la compilazione. L'applicazione legge
-`etc/properties.xml` e `etc/log4j.xml` dalla directory corrente.
-Le dipendenze di logging sono SLF4J e reload4j, compatibile con l'API Log4j
-utilizzata dai sorgenti e dalla configurazione esistenti.
+Build the project before running it for the first time. The application reads
+`etc/properties.xml` and `etc/log4j.xml` from the current directory.
+The logging dependencies are SLF4J and reload4j, which is compatible with the Log4j API
+used by the existing source code and configuration.
 
-In IntelliJ IDEA aprire il `pom.xml` come progetto Maven.
+In IntelliJ IDEA, open `pom.xml` as a Maven project.
 
-## Giocare
+## Play
 
-Di default giochi con il Bianco contro il computer. Inserisci mosse come `e2-e4`,
-`moves` per elencare le mosse legali, `quit` per uscire. La promozione richiede
-una scelta separata (`Q`, `R`, `B`, `N`). L'arrocco si indica con la mossa del re
-(`e1-g1` oppure `e1-c1` per il Bianco).
+By default, you play White against the computer. Enter moves such as `e2-e4`,
+`moves` to list legal moves, or `quit` to exit. Pawn promotion requires
+a separate choice (`Q`, `R`, `B`, `N`). To castle, enter the king's move
+(`e1-g1` or `e1-c1` for White).
 
 ```sh
 mvn exec:java -Dexec.args="--black"
 mvn exec:java -Dexec.args="--two-players"
 ```
 
-La ricerca usa alpha-beta fino a tre semimosse, con il limite massimo in secondi
-`timeForMove` di `etc/properties.xml`; può rispondere prima del limite.
-Riconosce scacco matto e stallo. Questa versione di base non gestisce ancora
-le patte per ripetizione, regola delle 50 mosse o materiale insufficiente.
+The search uses alpha-beta pruning to a depth of up to three plies, with a time limit
+in seconds set by `timeForMove` in `etc/properties.xml`; it may respond before the limit.
+It detects checkmate and stalemate. This basic version does not yet handle
+draws by repetition, the 50-move rule, or insufficient material.
