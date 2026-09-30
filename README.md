@@ -8,11 +8,18 @@ A Java chess engine. Requires JDK 11 or later and Maven 3.6.3 or later.
 mvn clean verify
 ```
 
-The JAR is generated at `target/m-1.0-SNAPSHOT.jar`.
+The executable JAR, including its runtime dependencies, is generated at
+`target/m-1.0-SNAPSHOT.jar`.
 
 ## Run
 
 From the project's root directory:
+
+```sh
+java -jar target/m-1.0-SNAPSHOT.jar
+```
+
+Alternatively, run through Maven:
 
 ```sh
 mvn exec:java
