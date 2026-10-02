@@ -1,37 +1,56 @@
 package org.saidone.m;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.log4j.xml.DOMConfigurator;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.Banner;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.env.Environment;
+import org.saidone.m.xboard.XBoardProtocol;
+import java.nio.charset.StandardCharsets;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.Arrays;
 import org.saidone.m.moves.generators.MoveGenerator;
 import org.saidone.m.moves.MoveMaker;
 import org.saidone.m.moves.MoveUtils;
 import org.saidone.m.moves.UserMoveParser;
-import org.saidone.utils.KProperties;
+
 
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Scanner;
 
 @Slf4j
+@SpringBootApplication
 public class M {
     public static void main(String[] args) {
-        DOMConfigurator.configure("etc/log4j.xml");
-        log.info("Application started");
-        boolean twoPlayers = args.length > 0 && "--two-players".equals(args[0]);
-        boolean humanWhite = args.length == 0 || !"--black".equals(args[0]);
-        if (args.length > 1 || (args.length == 1 && !twoPlayers && humanWhite)) {
-            System.out.println("Usage: [--black | --two-players]");
-            return;
+        SpringApplication app = new SpringApplication(M.class);
+        app.setWebApplicationType(WebApplicationType.NONE);
+        app.setBannerMode(Banner.Mode.OFF);
+        app.setLogStartupInfo(false);
+        try (var context = app.run(args)) {
+            // Closing the context releases all resources after EOF or quit.
         }
-        long timeMillis = 2000;
-        try {
-            long seconds = Long.parseLong(KProperties.INSTANCE.getProperty("timeForMove"));
-            if (seconds > 0 && seconds <= 3600) timeMillis = seconds * 1000;
-        } catch (NumberFormatException ignored) {
-            log.warn("Invalid timeForMove; using 2 seconds");
-        }
-        Searcher searcher = new Searcher(3, timeMillis);
-        play(BoardUtils.newBoard(), new Scanner(System.in), searcher, humanWhite, twoPlayers);
+    }
+
+    @Bean
+    CommandLineRunner console(Environment environment) {
+        return args -> {
+            int depth = environment.getProperty("m.search.depth", Integer.class, 3);
+            long millis = environment.getProperty("m.search.time-millis", Long.class, 2000L);
+            if (Arrays.asList(args).contains("--xboard")) {
+                try (var protocol = new XBoardProtocol(new PrintWriter(System.out, true), depth, millis)) {
+                    protocol.run(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+                }
+            } else {
+                boolean twoPlayers = Arrays.asList(args).contains("--two-players");
+                boolean humanWhite = !Arrays.asList(args).contains("--black");
+                play(BoardUtils.newBoard(), new Scanner(System.in), new Searcher(depth, millis), humanWhite, twoPlayers);
+            }
+        };
     }
 
     static void play(byte[] board, Scanner reader, Searcher searcher, boolean humanWhite, boolean twoPlayers) {
