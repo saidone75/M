@@ -2,6 +2,7 @@ package org.saidone.utils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Properties;
 
 public enum KProperties {
@@ -11,11 +12,11 @@ public enum KProperties {
 	private final Properties properties = new Properties();
 
 	KProperties() {
-		try {
-			properties.loadFromXML(new FileInputStream("etc/properties.xml"));
+		try (FileInputStream stream = new FileInputStream("etc/properties.xml")) {
+			properties.loadFromXML(stream);
 		}
 		catch (IOException e) {
-			e.printStackTrace();
+			throw new UncheckedIOException("Cannot load etc/properties.xml", e);
 		}
 	}
 	

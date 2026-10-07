@@ -1,37 +1,44 @@
 package org.saidone.m;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.log4j.xml.DOMConfigurator;
+import org.saidone.m.xboard.XBoardProtocol;
+import java.nio.charset.StandardCharsets;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.*;
+
 import org.saidone.m.moves.generators.MoveGenerator;
 import org.saidone.m.moves.MoveMaker;
 import org.saidone.m.moves.MoveUtils;
 import org.saidone.m.moves.UserMoveParser;
+
+
 import org.saidone.utils.KProperties;
+import java.io.IOException;
 
-import java.util.LinkedList;
-import java.util.Locale;
-import java.util.Scanner;
-
-@Slf4j
 public class M {
-    public static void main(String[] args) {
-        DOMConfigurator.configure("etc/log4j.xml");
-        log.info("Application started");
-        boolean twoPlayers = args.length > 0 && "--two-players".equals(args[0]);
-        boolean humanWhite = args.length == 0 || !"--black".equals(args[0]);
-        if (args.length > 1 || (args.length == 1 && !twoPlayers && humanWhite)) {
-            System.out.println("Usage: [--black | --two-players]");
-            return;
+
+    public static void main(String[] args) throws IOException {
+        int depth = Integer.parseInt(configuration("searchDepth"));
+        long millis = Long.parseLong(configuration("searchTimeMillis"));
+        List<String> options = Arrays.asList(args);
+        boolean interactive = options.contains("--interactive") || options.contains("--black") || options.contains("--two-players");
+        if (options.contains("--xboard") || !interactive) {
+            try (XBoardProtocol protocol = new XBoardProtocol(new PrintWriter(System.out, true), depth, millis)) {
+                protocol.run(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+            }
+        } else {
+            boolean twoPlayers = options.contains("--two-players");
+            boolean humanWhite = !options.contains("--black");
+            try (Scanner reader = new Scanner(System.in)) {
+                play(BoardUtils.newBoard(), reader, new Searcher(depth, millis), humanWhite, twoPlayers);
+            }
         }
-        long timeMillis = 2000;
-        try {
-            long seconds = Long.parseLong(KProperties.INSTANCE.getProperty("timeForMove"));
-            if (seconds > 0 && seconds <= 3600) timeMillis = seconds * 1000;
-        } catch (NumberFormatException ignored) {
-            log.warn("Invalid timeForMove; using 2 seconds");
-        }
-        Searcher searcher = new Searcher(3, timeMillis);
-        play(BoardUtils.newBoard(), new Scanner(System.in), searcher, humanWhite, twoPlayers);
+    }
+
+    private static String configuration(String key) {
+        String value = KProperties.INSTANCE.getProperty(key);
+        if (value == null) throw new IllegalArgumentException("Missing configuration property: " + key);
+        return value;
     }
 
     static void play(byte[] board, Scanner reader, Searcher searcher, boolean humanWhite, boolean twoPlayers) {
@@ -96,4 +103,5 @@ public class M {
         if ((move[2] & MoveUtils.PROMOTE_KNIGHT) != 0) promotion = "=N";
         return BoardUtils.indexToString(move[0]) + "-" + BoardUtils.indexToString(move[1]) + promotion;
     }
+
 }

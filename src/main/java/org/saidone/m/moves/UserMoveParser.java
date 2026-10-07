@@ -5,7 +5,6 @@ import org.saidone.m.BoardUtils;
 public class UserMoveParser {
 
     public static byte[] parseInput(String input) {
-
         if (input.matches("[a-h]{1}[1-8]{1}-[a-h]{1}[1-8]{1}")) {
             String[] plys = input.split("-");
             return new byte[]{BoardUtils.stringToIndex(plys[0]), BoardUtils.stringToIndex(plys[1]), 0};

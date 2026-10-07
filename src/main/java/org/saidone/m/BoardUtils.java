@@ -67,6 +67,56 @@ public class BoardUtils {
         return board;
     }
 
+    /** Parses the six standard FEN fields into the engine's 0x88 board. */
+    public static byte[] fromFen(String fen) {
+        String[] fields = fen.trim().split("\\s+");
+        if (fields.length != 6) throw new IllegalArgumentException("Expected six FEN fields");
+        byte[] board = new byte[126];
+        String[] ranks = fields[0].split("/", -1);
+        if (ranks.length != 8) throw new IllegalArgumentException("Expected eight ranks");
+        int whiteKings = 0, blackKings = 0;
+        String symbols = "PNKBRQpnkbrq";
+        byte[] pieces = {Pieces.WP, Pieces.WN, Pieces.WK, Pieces.WB, Pieces.WR, Pieces.WQ,
+                Pieces.BP, Pieces.BN, Pieces.BK, Pieces.BB, Pieces.BR, Pieces.BQ};
+        for (int rank = 0; rank < 8; rank++) {
+            int file = 0;
+            for (char c : ranks[rank].toCharArray()) {
+                if (c >= '1' && c <= '8') file += c - '0';
+                else {
+                    int piece = symbols.indexOf(c);
+                    if (piece < 0 || file >= 8) throw new IllegalArgumentException("Invalid piece or rank");
+                    if (c == 'K') whiteKings++;
+                    if (c == 'k') blackKings++;
+                    if ((c == 'P' || c == 'p') && (rank == 0 || rank == 7))
+                        throw new IllegalArgumentException("Pawn on promotion rank");
+                    board[(7 - rank) * 16 + file++] = pieces[piece];
+                }
+                if (file > 8) throw new IllegalArgumentException("Rank too long");
+            }
+            if (file != 8) throw new IllegalArgumentException("Rank too short");
+        }
+        if (whiteKings != 1 || blackKings != 1) throw new IllegalArgumentException("Expected one king per side");
+        if (!fields[1].matches("[wb]")) throw new IllegalArgumentException("Invalid side");
+        board[120] = (byte) (fields[1].equals("w") ? 1 : 0);
+        if (!fields[2].matches("-|K?Q?k?q?" ) || fields[2].isEmpty())
+            throw new IllegalArgumentException("Invalid castling rights");
+        for (int n = 0; n < 4; n++) board[121 + n] = (byte) (fields[2].indexOf("KQkq".charAt(n)) >= 0 ? 1 : 0);
+        if (!fields[3].equals("-")) {
+            if (!fields[3].matches(board[120] == 1 ? "[a-h]6" : "[a-h]3"))
+                throw new IllegalArgumentException("Invalid en passant square");
+            board[125] = stringToIndex(fields[3]);
+        }
+        if (!fields[4].matches("[0-9]+") || !fields[5].matches("[0-9]+")
+                || Long.parseLong(fields[5]) < 1) throw new IllegalArgumentException("Invalid move counters");
+        Long.parseLong(fields[4]);
+        // The side that just moved cannot have left its king in check.
+        board[120] ^= 1;
+        boolean invalid = isKingInCheck(board);
+        board[120] ^= 1;
+        if (invalid) throw new IllegalArgumentException("Inactive king is in check");
+        return board;
+    }
+
     private static String pieceToString(byte piece, String out) {
         switch (piece % 8) {
             case 1:

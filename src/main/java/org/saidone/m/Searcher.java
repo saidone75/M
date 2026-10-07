@@ -4,14 +4,14 @@ import org.saidone.m.moves.MoveMaker;
 import org.saidone.m.moves.MoveUtils;
 import org.saidone.m.moves.generators.MoveGenerator;
 import java.util.LinkedList;
+import java.util.function.BooleanSupplier;
 
 /** A small iterative-deepening negamax engine with alpha-beta pruning. */
 public class Searcher {
+
     private static final int MATE = 100000;
     private final int depth;
     private final long timeMillis;
-
-    public Searcher() { this(3, 2000); }
 
     public Searcher(int depth, long timeMillis) {
         if (depth < 1 || depth > 10 || timeMillis < 1 || timeMillis > 3600000)
@@ -22,6 +22,10 @@ public class Searcher {
 
     /** Returns a legal move, or null at mate/stalemate; never modifies board. */
     public byte[] search(byte[] board) {
+        return search(board, () -> false);
+    }
+
+    public byte[] search(byte[] board, BooleanSupplier stopRequested) {
         LinkedList<byte[]> moves = MoveUtils.capturesFirst(MoveGenerator.genUserMoves(board));
         if (moves.isEmpty()) return null;
         byte[] best = moves.getFirst();
@@ -32,7 +36,7 @@ public class Searcher {
             try {
                 for (byte[] move : moves) {
                     int score = -score(MoveMaker.makeMove(board.clone(), move),
-                            iteration - 1, -MATE, -alpha, 1, deadline);
+                            iteration - 1, -MATE, -alpha, 1, deadline, stopRequested);
                     if (score > alpha) { alpha = score; candidate = move; }
                 }
                 best = candidate;
@@ -45,15 +49,14 @@ public class Searcher {
         return best.clone();
     }
 
-    private int score(byte[] board, int remaining, int alpha, int beta, int ply, long deadline) {
-        if (System.nanoTime() - deadline >= 0 || Thread.currentThread().isInterrupted())
+    private int score(byte[] board, int remaining, int alpha, int beta, int ply, long deadline, BooleanSupplier stopRequested) {
+        if (System.nanoTime() - deadline >= 0 || Thread.currentThread().isInterrupted() || stopRequested.getAsBoolean())
             throw new SearchTimeout();
         LinkedList<byte[]> moves = MoveGenerator.genUserMoves(board);
         if (moves.isEmpty()) return BoardUtils.isKingInCheck(board) ? -MATE + ply : 0;
         if (remaining == 0) return (board[120] == 1 ? 1 : -1) * Evaluator.evaluate(board);
         for (byte[] move : MoveUtils.capturesFirst(moves)) {
-            int value = -score(MoveMaker.makeMove(board.clone(), move), remaining - 1,
-                    -beta, -alpha, ply + 1, deadline);
+            int value = -score(MoveMaker.makeMove(board.clone(), move), remaining - 1, -beta, -alpha, ply + 1, deadline, stopRequested);
             if (value >= beta) return value;
             alpha = Math.max(alpha, value);
         }
@@ -63,4 +66,5 @@ public class Searcher {
     private static class SearchTimeout extends RuntimeException {
         SearchTimeout() { super(null, null, false, false); }
     }
+
 }

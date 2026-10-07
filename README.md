@@ -1,6 +1,7 @@
 # Mostly Harmless (formerly "M - The monster of Màsera")
 
-A Java chess engine. Requires JDK 11 or later and Maven 3.6.3 or later.
+A standalone Java chess engine with no runtime dependencies.
+Requires JDK 8 or later and Maven.
 
 ## Build
 
@@ -8,36 +9,43 @@ A Java chess engine. Requires JDK 11 or later and Maven 3.6.3 or later.
 mvn clean verify
 ```
 
-The JAR is generated at `target/m-1.0-SNAPSHOT.jar`.
+The executable JAR is generated at
+`target/m-1.0-SNAPSHOT.jar`.
 
-## Run
+## XBoard / WinBoard
 
-From the project's root directory:
-
-```sh
-mvn exec:java
-```
-
-Build the project before running it for the first time. The application reads
-`etc/properties.xml` and `etc/log4j.xml` from the current directory.
-The logging dependencies are SLF4J and reload4j, which is compatible with the Log4j API
-used by the existing source code and configuration.
-
-In IntelliJ IDEA, open `pom.xml` as a Maven project.
-
-## Play
-
-By default, you play White against the computer. Enter moves such as `e2-e4`,
-`moves` to list legal moves, or `quit` to exit. Pawn promotion requires
-a separate choice (`Q`, `R`, `B`, `N`). To castle, enter the king's move
-(`e1-g1` or `e1-c1` for White).
+The CECP adapter is the default mode:
 
 ```sh
-mvn exec:java -Dexec.args="--black"
-mvn exec:java -Dexec.args="--two-players"
+java -jar target/m-1.0-SNAPSHOT.jar
 ```
 
-The search uses alpha-beta pruning to a depth of up to three plies, with a time limit
-in seconds set by `timeForMove` in `etc/properties.xml`; it may respond before the limit.
-It detects checkmate and stalemate. This basic version does not yet handle
-draws by repetition, the 50-move rule, or insufficient material.
+Launch it through XBoard from the project directory:
+
+The adapter follows the [Chess Engine Communication Protocol](https://www.gnu.org/software/xboard/engine-intf.html).
+
+The engine reports checkmate and stalemate; it does not yet
+adjudicate repetition, the 50-move rule, or insufficient material.
+
+## Interactive play
+
+```sh
+java -jar target/m-1.0-SNAPSHOT.jar --interactive
+java -jar target/m-1.0-SNAPSHOT.jar --black
+java -jar target/m-1.0-SNAPSHOT.jar --two-players
+```
+
+With `--interactive`, you play White against the computer. `--black` and
+`--two-players` also select interactive play. Enter moves such as `e2-e4`,
+`moves` to list legal moves, or `quit` to exit. Promotion requires a separate
+choice (`Q`, `R`, `B`, `N`). Castle by moving the king (`e1-g1` or `e1-c1`).
+
+## Configuration
+
+Search parameters are read from `etc/properties.xml`, relative to  the working
+directory. Run the engine from the project directory, or provide an
+`etc/properties.xml` under your chosen working directory.
+
+## Validation
+
+`mvn clean package` compiles the engine and packages the executable JAR.
