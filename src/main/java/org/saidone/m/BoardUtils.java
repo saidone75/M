@@ -106,10 +106,11 @@ public class BoardUtils {
                 throw new IllegalArgumentException("Invalid en passant square");
             board[125] = stringToIndex(fields[3]);
         }
-        if (!fields[4].matches("[0-9]+") || !fields[5].matches("[0-9]+")
-                || Long.parseLong(fields[5]) < 1) throw new IllegalArgumentException("Invalid move counters");
-        Long.parseLong(fields[4]);
-        // The side that just moved cannot have left its king in check.
+        if (!fields[4].matches("[0-9]+")
+                || !fields[5].matches("[0-9]+")
+                || Long.parseLong(fields[5]) < 1)
+            throw new IllegalArgumentException("Invalid move counters");
+        // the side that just moved cannot have left its king in check
         board[120] ^= 1;
         boolean invalid = isKingInCheck(board);
         board[120] ^= 1;
